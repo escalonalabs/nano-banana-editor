@@ -214,10 +214,16 @@ async function createApp() {
     const request = input.request;
 
     const targetAsset = selectAssetStmt.get(request.targetAssetId, input.projectId);
-    const sourceAsset = selectAssetStmt.get(request.sourceAssetId, input.projectId);
+    const sourceAsset = request.sourceAssetId
+      ? selectAssetStmt.get(request.sourceAssetId, input.projectId)
+      : null;
 
-    if (!targetAsset || !sourceAsset) {
-      throw new Error('Target/source asset not found');
+    if (!targetAsset) {
+      throw new Error('Target asset not found');
+    }
+
+    if (request.sourceAssetId && !sourceAsset) {
+      throw new Error('Source asset not found');
     }
 
     const maskAsset = request.sourceMask?.assetId
@@ -226,7 +232,7 @@ async function createApp() {
 
     const [targetBuffer, sourceBuffer, maskBuffer] = await Promise.all([
       loadAssetBuffer(targetAsset),
-      loadAssetBuffer(sourceAsset),
+      sourceAsset ? loadAssetBuffer(sourceAsset) : Promise.resolve(null),
       maskAsset ? loadAssetBuffer(maskAsset) : Promise.resolve(null),
     ]);
 
@@ -273,7 +279,7 @@ async function createApp() {
         'object-transfer',
         JSON.stringify({
           targetAssetId: request.targetAssetId,
-          sourceAssetId: request.sourceAssetId,
+          sourceAssetId: request.sourceAssetId || null,
           maskAssetId: request.sourceMask?.assetId || null,
           previewAssetId: previewAsset.id,
           candidateAssetIds: [finalAsset.id],
@@ -426,7 +432,17 @@ async function createApp() {
 
     const filePath = absoluteAssetPath(config.casDir, asset.cas_path);
     res.type(asset.mime);
-    return res.sendFile(filePath);
+    return res.sendFile(filePath, { dotfiles: 'allow' }, (error) => {
+      if (!error) {
+        return;
+      }
+
+      if (error.status === 404 || error.code === 'ENOENT') {
+        return res.status(404).json({ error: 'Asset file missing in storage' });
+      }
+
+      return res.status(500).json({ error: 'Unable to stream asset file' });
+    });
   });
 
   app.post('/v1/projects/:projectId/operations/object-transfer', (req, res) => {
@@ -449,9 +465,15 @@ async function createApp() {
     }
 
     const hasTarget = selectAssetStmt.get(payload.targetAssetId, req.params.projectId);
-    const hasSource = selectAssetStmt.get(payload.sourceAssetId, req.params.projectId);
-    if (!hasTarget || !hasSource) {
-      return res.status(400).json({ error: 'targetAssetId/sourceAssetId must belong to the same project' });
+    if (!hasTarget) {
+      return res.status(400).json({ error: 'targetAssetId must belong to the same project' });
+    }
+
+    if (payload.sourceAssetId) {
+      const hasSource = selectAssetStmt.get(payload.sourceAssetId, req.params.projectId);
+      if (!hasSource) {
+        return res.status(400).json({ error: 'sourceAssetId must belong to the same project' });
+      }
     }
 
     if (payload.sourceMask?.assetId) {
@@ -688,7 +710,8 @@ async function createApp() {
     if (!error) {
       return next();
     }
-    return res.status(500).json({ error: error.message || 'Internal server error' });
+    const status = Number.isInteger(error.status) ? error.status : 500;
+    return res.status(status).json({ error: error.message || 'Internal server error' });
   });
 
   return app;

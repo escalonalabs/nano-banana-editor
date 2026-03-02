@@ -17,14 +17,14 @@
         <aside class="sidebar glass-panel">
             <div class="sidebar-header">
                 <h2><i class="fa-solid fa-layer-group"></i> Colección</h2>
-                <p>Sube imágenes aquí para extraer objetos.</p>
+                <p>Opcional: sube una imagen fuente si quieres transferir objetos.</p>
             </div>
 
             <div id="secondary-images-container" class="images-grid">
                 <!-- Se llenará dinámicamente con JS -->
                 <div class="upload-placeholder secondary-upload">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <span>Subir imagen extra</span>
+                    <span>Subir fuente opcional</span>
                     <input type="file" id="upload-secondary" multiple accept="image/*" hidden>
                 </div>
             </div>
@@ -73,7 +73,7 @@
                         <option value="">Cargando modelos...</option>
                     </select>
                     <button class="btn btn-primary" id="btn-apply-ai">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Aplicar Nano Banana
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Editar Imagen
                     </button>
                 </div>
             </header>
@@ -111,7 +111,7 @@
                 <div class="prompt-input-wrapper">
                     <i class="fa-solid fa-terminal prompt-icon"></i>
                     <input type="text" id="ai-prompt"
-                        placeholder="Ej: Inserta el perro de la colección 1 en el área seleccionada, adaptando la iluminación..."
+                        placeholder="Ej: Cambia el área enmascarada a estilo cinematográfico cálido... (fuente opcional)"
                         autocomplete="off">
                 </div>
             </div>

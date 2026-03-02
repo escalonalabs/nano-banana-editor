@@ -499,18 +499,13 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error('Sube una imagen principal primero.');
       }
 
-      if (!state.sourceAssets.size) {
-        throw new Error('Sube al menos una imagen en la colección para transferir un objeto.');
-      }
-
-      if (!state.activeSourceAssetId) {
+      if (!state.activeSourceAssetId && state.sourceAssets.size) {
         state.activeSourceAssetId = state.sourceAssets.keys().next().value;
       }
 
-      const activeSource = state.sourceAssets.get(state.activeSourceAssetId);
-      if (!activeSource) {
-        throw new Error('No se encontró imagen fuente activa.');
-      }
+      const activeSource = state.activeSourceAssetId
+        ? state.sourceAssets.get(state.activeSourceAssetId)
+        : null;
 
       const maskBounds = getMaskBounds();
       if (!maskBounds) {
@@ -526,7 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const maskAsset = await uploadImageAsset(maskBlob, 'mask.png', 'mask');
 
-      const sourceWidth = activeSource.width || maskBounds.width;
+      const sourceWidth = activeSource?.width || maskBounds.width;
       const scale = Math.max(0.05, Math.min(4, maskBounds.width / Math.max(1, sourceWidth)));
 
       const promptValue = document.getElementById('ai-prompt').value.trim();
@@ -534,7 +529,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const transferPayload = {
         projectId: state.projectId,
         targetAssetId: state.targetAssetId,
-        sourceAssetId: state.activeSourceAssetId,
         sourceMask: { kind: 'raster', assetId: maskAsset.id },
         placement: {
           x: Math.round(maskBounds.centerX),
@@ -551,6 +545,10 @@ document.addEventListener('DOMContentLoaded', () => {
           shadow: 'auto',
         },
       };
+
+      if (activeSource?.id) {
+        transferPayload.sourceAssetId = activeSource.id;
+      }
 
       const operation = await apiJson(`/v1/projects/${state.projectId}/operations/object-transfer`, {
         method: 'POST',
@@ -571,7 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
         : '';
 
       showMessage(
-        `Transferencia completada.\nEdge score: ${quality.edgeScore ?? '-'}\nDeltaE: ${quality.colorDeltaE ?? '-'}${artifactText}`,
+        `Edición completada.\nEdge score: ${quality.edgeScore ?? '-'}\nDeltaE: ${quality.colorDeltaE ?? '-'}${artifactText}`,
         'success'
       );
     } catch (error) {

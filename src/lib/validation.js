@@ -24,7 +24,7 @@ const refineSchema = z.object({
 const objectTransferRequestSchema = z.object({
   projectId: z.string(),
   targetAssetId: z.string(),
-  sourceAssetId: z.string(),
+  sourceAssetId: z.string().optional(),
   sourceMask: sourceMaskSchema,
   placement: placementSchema,
   promptDirectives: z.string().min(1),
