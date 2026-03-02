@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nano Banana 2 | AI Image Editor</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar para imágenes secundarias (Multi-imagen) -->
+        <aside class="sidebar glass-panel">
+            <div class="sidebar-header">
+                <h2><i class="fa-solid fa-layer-group"></i> Colección</h2>
+                <p>Sube imágenes aquí para extraer objetos.</p>
+            </div>
+
+            <div id="secondary-images-container" class="images-grid">
+                <!-- Se llenará dinámicamente con JS -->
+                <div class="upload-placeholder secondary-upload">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Subir imagen extra</span>
+                    <input type="file" id="upload-secondary" multiple accept="image/*" hidden>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Área de Trabajo Principal -->
+        <main class="workspace">
+            <header class="top-bar glass-panel">
+                <div class="logo">
+                    <span class="gradient-text">Nano Banana 2</span>
+                    <span class="badge">Pro</span>
+                </div>
+
+                <div class="toolbar">
+                    <div class="tool-group">
+                        <button class="tool-btn active" id="tool-draw" title="Dibujar Máscara">
+                            <i class="fa-solid fa-paintbrush"></i>
+                        </button>
+                        <button class="tool-btn" id="tool-erase" title="Borrar Máscara">
+                            <i class="fa-solid fa-eraser"></i>
+                        </button>
+                    </div>
+
+                    <div class="tool-group brush-settings">
+                        <i class="fa-solid fa-circle" style="font-size: 0.8em; color: var(--text-muted)"></i>
+                        <input type="range" id="brush-size" min="5" max="100" value="20">
+                        <i class="fa-solid fa-circle" style="font-size: 1.2em; color: var(--text-muted)"></i>
+                    </div>
+                    <button class="tool-btn danger-hover" id="clear-mask" title="Limpiar Máscara">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+
+                <div class="actions" style="display: flex; gap: 10px; align-items: center;">
+                    <button class="btn btn-outline" id="btn-undo" title="Deshacer">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                    <button class="btn btn-outline" id="btn-redo" title="Rehacer">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                    <button class="btn btn-outline" id="btn-export" title="Exportar PNG">
+                        <i class="fa-solid fa-file-export"></i>
+                    </button>
+                    <select id="model-selector" class="glass-panel"
+                        style="padding: 10px; border-radius: 8px; color: var(--text-main); border: 1px solid var(--border-color); cursor: pointer; display: none;">
+                        <option value="">Cargando modelos...</option>
+                    </select>
+                    <button class="btn btn-primary" id="btn-apply-ai">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Aplicar Nano Banana
+                    </button>
+                </div>
+            </header>
+
+            <div class="canvas-container">
+                <div id="main-upload-zone" class="upload-zone drop-zone">
+                    <div class="upload-content">
+                        <div class="upload-icon-wrapper">
+                            <i class="fa-solid fa-images icon-shadow"></i>
+                        </div>
+                        <h3>Arrastra tu imagen principal aquí</h3>
+                        <p>o haz clic para buscar en tus archivos</p>
+                        <input type="file" id="upload-main" accept="image/*" hidden>
+                        <button class="btn btn-outline"
+                            onclick="document.getElementById('upload-main').click()">Seleccionar Archivo</button>
+                    </div>
+                </div>
+
+                <div id="editor-wrapper" class="hidden">
+                    <canvas id="main-canvas"></canvas>
+                    <canvas id="mask-canvas"></canvas>
+                </div>
+
+                <!-- Loading Overlay -->
+                <div id="loading-overlay" class="hidden glass-panel-strong">
+                    <div class="loader">
+                        <div class="spinner"></div>
+                        <h3 class="gradient-text">Nano Banana 2 está procesando...</h3>
+                        <p>Analizando geometría e incrustando objeto...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="prompt-bar glass-panel">
+                <div class="prompt-input-wrapper">
+                    <i class="fa-solid fa-terminal prompt-icon"></i>
+                    <input type="text" id="ai-prompt"
+                        placeholder="Ej: Inserta el perro de la colección 1 en el área seleccionada, adaptando la iluminación..."
+                        autocomplete="off">
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
